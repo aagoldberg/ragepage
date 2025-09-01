@@ -1,0 +1,131 @@
+type Deal @entity {
+  id: ID!
+  splitter: Bytes!
+  lenderVault: Bytes!
+  adapter: Bytes!
+  treasury: Bytes!
+  
+  # Deal parameters
+  shareBps: BigInt!
+  repaymentCap: BigInt!
+  advanceAmount: BigInt!
+  dealStartTime: BigInt!
+  dealEndTime: BigInt!
+  
+  # Current state
+  totalPaid: BigInt!
+  isCapReached: Boolean!
+  isPaused: Boolean!
+  
+  # Safety rails
+  dailyCap: BigInt!
+  transactionCap: BigInt!
+  
+  # Relations
+  splits: [Split!]! @derivedFrom(field: "deal")
+  deposits: [Deposit!]! @derivedFrom(field: "deal")
+  claims: [Claim!]! @derivedFrom(field: "deal")
+  lenders: [Lender!]! @derivedFrom(field: "deal")
+  
+  # Timestamps
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+type Split @entity {
+  id: ID! # tx hash + log index
+  deal: Deal!
+  token: Bytes!
+  totalAmount: BigInt!
+  toLenders: BigInt!
+  toTreasury: BigInt!
+  totalPaidAfter: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Deposit @entity {
+  id: ID! # tx hash + log index
+  deal: Deal!
+  token: Bytes!
+  amount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Claim @entity {
+  id: ID! # tx hash + log index
+  deal: Deal!
+  lender: Lender!
+  token: Bytes!
+  amount: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Lender @entity {
+  id: ID! # lender address
+  deal: Deal!
+  address: Bytes!
+  receiptTokenBalance: BigInt!
+  totalClaimed: BigInt!
+  claims: [Claim!]! @derivedFrom(field: "lender")
+  
+  # Per-token tracking
+  claimsByToken: [LenderTokenBalance!]! @derivedFrom(field: "lender")
+  
+  # Timestamps
+  firstDepositAt: BigInt!
+  lastClaimAt: BigInt!
+}
+
+type LenderTokenBalance @entity {
+  id: ID! # lender address + token address
+  lender: Lender!
+  token: Bytes!
+  totalClaimed: BigInt!
+  claimableAmount: BigInt!
+  lastUpdated: BigInt!
+}
+
+type ForwardedRevenue @entity {
+  id: ID! # tx hash + log index
+  adapter: Bytes!
+  token: Bytes!
+  amount: BigInt!
+  toSplitter: Boolean!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type SafetyRailEvent @entity {
+  id: ID! # tx hash + log index
+  deal: Deal!
+  reason: String!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DailyVolume @entity {
+  id: ID! # deal address + day (timestamp / 86400)
+  deal: Deal!
+  day: BigInt!
+  volume: BigInt!
+  transactionCount: BigInt!
+}
+
+# Global statistics
+type GlobalStats @entity {
+  id: ID! # "global"
+  totalDeals: BigInt!
+  totalVolume: BigInt!
+  totalPaid: BigInt!
+  totalLenders: BigInt!
+  activeDeals: BigInt!
+  completedDeals: BigInt!
+}

@@ -1,0 +1,82 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: RevenueSplitter
+    network: mainnet
+    source:
+      address: "0x0000000000000000000000000000000000000000" # Replace with deployed address
+      abi: RevenueSplitter
+      startBlock: 18000000 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/revenue-splitter.ts
+      entities:
+        - Deal
+        - Split
+        - CapReached
+      abis:
+        - name: RevenueSplitter
+          file: ./abis/RevenueSplitter.json
+        - name: LenderVault
+          file: ./abis/LenderVault.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: SplitExecuted(indexed address,uint256,uint256,uint256)
+          handler: handleSplitExecuted
+        - event: CapReached(uint256)
+          handler: handleCapReached
+        - event: SafetyRailTriggered(string)
+          handler: handleSafetyRailTriggered
+  - kind: ethereum/contract
+    name: LenderVault
+    network: mainnet
+    source:
+      address: "0x0000000000000000000000000000000000000000" # Replace with deployed address
+      abi: LenderVault
+      startBlock: 18000000 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/lender-vault.ts
+      entities:
+        - Deposit
+        - Claim
+        - Lender
+      abis:
+        - name: LenderVault
+          file: ./abis/LenderVault.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Deposited(indexed address,uint256,uint256)
+          handler: handleDeposited
+        - event: Claimed(indexed address,indexed address,uint256)
+          handler: handleClaimed
+        - event: ReceiptTokenMinted(indexed address,uint256)
+          handler: handleReceiptTokenMinted
+  - kind: ethereum/contract
+    name: RevenueAdapter
+    network: mainnet
+    source:
+      address: "0x0000000000000000000000000000000000000000" # Replace with deployed address
+      abi: RevenueAdapter
+      startBlock: 18000000 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/revenue-adapter.ts
+      entities:
+        - ForwardedRevenue
+      abis:
+        - name: RevenueAdapter
+          file: ./abis/RevenueAdapter.json
+      eventHandlers:
+        - event: Forwarded(indexed address,uint256,bool)
+          handler: handleForwarded

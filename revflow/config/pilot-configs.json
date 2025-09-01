@@ -1,0 +1,198 @@
+{
+  "pilot_deployments": {
+    "testnet_pilot": {
+      "network": "sepolia",
+      "description": "Conservative testnet pilot for initial validation",
+      "parameters": {
+        "advance_amount": "100000000000",
+        "advance_amount_human": "100,000 USDC",
+        "share_bps": 300,
+        "share_percentage": "3%",
+        "cap_multiple": 120,
+        "cap_multiple_human": "1.20x",
+        "repayment_cap": "120000000000",
+        "repayment_cap_human": "120,000 USDC",
+        "deal_duration_days": 60,
+        "deal_duration_seconds": 5184000,
+        "daily_cap": "10000000000",
+        "daily_cap_human": "10,000 USDC",
+        "transaction_cap": "5000000000",
+        "transaction_cap_human": "5,000 USDC",
+        "make_whole_amount": "5000000000",
+        "make_whole_amount_human": "5,000 USDC",
+        "cure_period_days": 7,
+        "no_payment_threshold_days": 14
+      },
+      "safety_features": {
+        "fee_router_enabled": true,
+        "default_vault_enabled": true,
+        "timelock_delay_hours": 48,
+        "pause_enabled": true,
+        "token_allowlist": ["USDC", "WETH"],
+        "emergency_stop": true
+      },
+      "monitoring": {
+        "subgraph_enabled": true,
+        "automation_enabled": true,
+        "alert_thresholds": {
+          "daily_volume_warning": "8000000000",
+          "transaction_size_warning": "4000000000",
+          "cap_approaching_threshold": 0.9
+        }
+      }
+    },
+    "mainnet_pilot_conservative": {
+      "network": "mainnet",
+      "description": "Ultra-conservative mainnet pilot with multiple safety nets",
+      "parameters": {
+        "advance_amount": "500000000000",
+        "advance_amount_human": "500,000 USDC",
+        "share_bps": 500,
+        "share_percentage": "5%",
+        "cap_multiple": 125,
+        "cap_multiple_human": "1.25x",
+        "repayment_cap": "625000000000",
+        "repayment_cap_human": "625,000 USDC",
+        "deal_duration_days": 90,
+        "deal_duration_seconds": 7776000,
+        "daily_cap": "25000000000",
+        "daily_cap_human": "25,000 USDC",
+        "transaction_cap": "10000000000",
+        "transaction_cap_human": "10,000 USDC",
+        "make_whole_amount": "25000000000",
+        "make_whole_amount_human": "25,000 USDC",
+        "cure_period_days": 7,
+        "no_payment_threshold_days": 14
+      },
+      "safety_features": {
+        "fee_router_enabled": true,
+        "default_vault_enabled": true,
+        "timelock_delay_hours": 72,
+        "pause_enabled": true,
+        "token_allowlist": ["USDC"],
+        "emergency_stop": true,
+        "multisig_required": true,
+        "collateral_requirement_percentage": 40
+      },
+      "monitoring": {
+        "subgraph_enabled": true,
+        "automation_enabled": true,
+        "defender_enabled": true,
+        "alert_thresholds": {
+          "daily_volume_warning": "20000000000",
+          "transaction_size_warning": "8000000000",
+          "cap_approaching_threshold": 0.85
+        },
+        "notification_channels": ["discord", "email", "telegram"]
+      }
+    },
+    "defi_protocol_pilot": {
+      "network": "mainnet",
+      "description": "Conservative pilot for established DeFi protocol",
+      "target_protocols": ["Aave", "Compound", "MakerDAO"],
+      "parameters": {
+        "advance_amount": "1000000000000",
+        "advance_amount_human": "1,000,000 USDC",
+        "share_bps": 800,
+        "share_percentage": "8%",
+        "cap_multiple": 130,
+        "cap_multiple_human": "1.30x",
+        "repayment_cap": "1300000000000",
+        "repayment_cap_human": "1,300,000 USDC",
+        "deal_duration_days": 120,
+        "deal_duration_seconds": 10368000,
+        "daily_cap": "50000000000",
+        "daily_cap_human": "50,000 USDC",
+        "transaction_cap": "20000000000",
+        "transaction_cap_human": "20,000 USDC",
+        "make_whole_amount": "50000000000",
+        "make_whole_amount_human": "50,000 USDC",
+        "cure_period_days": 5,
+        "no_payment_threshold_days": 10
+      },
+      "safety_features": {
+        "fee_router_enabled": true,
+        "default_vault_enabled": true,
+        "timelock_delay_hours": 48,
+        "pause_enabled": true,
+        "token_allowlist": ["USDC", "DAI"],
+        "emergency_stop": true,
+        "collateral_requirement_percentage": 25
+      }
+    },
+    "l2_sequencer_pilot": {
+      "network": "arbitrum",
+      "description": "Conservative pilot for L2 sequencer revenue sharing",
+      "target_protocols": ["Arbitrum", "Polygon", "Base"],
+      "parameters": {
+        "advance_amount": "2000000000000",
+        "advance_amount_human": "2,000,000 USDC",
+        "share_bps": 1200,
+        "share_percentage": "12%",
+        "cap_multiple": 140,
+        "cap_multiple_human": "1.40x",
+        "repayment_cap": "2800000000000",
+        "repayment_cap_human": "2,800,000 USDC",
+        "deal_duration_days": 180,
+        "deal_duration_seconds": 15552000,
+        "daily_cap": "100000000000",
+        "daily_cap_human": "100,000 USDC",
+        "transaction_cap": "30000000000",
+        "transaction_cap_human": "30,000 USDC",
+        "make_whole_amount": "100000000000",
+        "make_whole_amount_human": "100,000 USDC",
+        "cure_period_days": 7,
+        "no_payment_threshold_days": 14
+      },
+      "safety_features": {
+        "fee_router_enabled": true,
+        "default_vault_enabled": true,
+        "timelock_delay_hours": 72,
+        "pause_enabled": true,
+        "token_allowlist": ["USDC", "WETH"],
+        "emergency_stop": true,
+        "bridge_monitoring": true,
+        "collateral_requirement_percentage": 30
+      }
+    }
+  },
+  "risk_parameters": {
+    "conservative_caps": {
+      "max_advance_amount": "5000000000000",
+      "max_share_percentage": 15,
+      "min_cap_multiple": 120,
+      "max_cap_multiple": 150,
+      "max_deal_duration_days": 365,
+      "min_timelock_hours": 24,
+      "max_transaction_cap_percentage": 20,
+      "max_daily_cap_percentage": 50
+    },
+    "default_safety_rails": {
+      "pause_enabled": true,
+      "emergency_stop_enabled": true,
+      "multisig_threshold": 3,
+      "timelock_minimum_hours": 24,
+      "collateral_minimum_percentage": 20
+    }
+  },
+  "integration_patterns": {
+    "push_based": {
+      "description": "Protocol sets adapter as fee recipient",
+      "implementation": "protocol.setFeeRecipient(address(adapter))",
+      "advantages": ["No automation needed", "Real-time revenue sharing"],
+      "supported_protocols": ["Uniswap V3", "SushiSwap", "DEXs", "NFT Royalties"]
+    },
+    "pull_based": {
+      "description": "Automated claiming from protocol treasury functions",
+      "implementation": "adapter.claimAndForward()",
+      "advantages": ["Works with existing protocols", "Configurable frequency"],
+      "supported_protocols": ["Aave", "Compound", "Custom treasury systems"]
+    },
+    "hybrid": {
+      "description": "Combination of push and pull with fallback mechanisms",
+      "implementation": "Multiple adapters with different claiming strategies",
+      "advantages": ["Maximum reliability", "Redundant revenue capture"],
+      "supported_protocols": ["Complex multi-revenue protocols"]
+    }
+  }
+}

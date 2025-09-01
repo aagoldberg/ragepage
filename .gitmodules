@@ -1,0 +1,6 @@
+[submodule "revflow/lib/forge-std"]
+	path = revflow/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "revflow/lib/openzeppelin-contracts"]
+	path = revflow/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
