@@ -354,7 +354,7 @@ The implementation is production-ready for testnet deployment and pilot programs
 
 ## Implementation Repository
 
-The complete implementation is available at: [Revflow Protocol Repository](https://github.com/your-org/revflow)
+The complete implementation is available at: [RBF Crypto Treasury Protocol Repository](https://github.com/aagoldberg/rbf-cryptotreasury)
 
 **Key Components:**
 - `/src/core/` - Core protocol contracts

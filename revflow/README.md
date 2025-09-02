@@ -120,8 +120,8 @@ When $1,350,000 paid to lenders → Deal complete, 100% revenue to treasury
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/revflow
-cd revflow
+git clone https://github.com/aagoldberg/rbf-cryptotreasury
+cd rbf-cryptotreasury
 
 # Install Solidity dependencies
 forge install
@@ -384,7 +384,7 @@ cd subgraph
 npm install
 npx graph codegen
 npx graph build
-npx graph deploy your-username/revflow-mainnet
+npx graph deploy your-username/rbf-cryptotreasury-mainnet
 ```
 
 ## Example Queries
