@@ -2,6 +2,7 @@
  * Shopify adapter for zkTLS proof generation
  */
 
+import { ReclaimProofRequest } from '@reclaimprotocol/js-sdk';
 import type { CashflowProof, ReclaimProof } from '../types';
 
 interface ShopifyAdapterConfig {
@@ -10,6 +11,7 @@ interface ShopifyAdapterConfig {
   reclaimConfig: {
     appId: string;
     appSecret: string;
+    providerId?: string; // Optional custom provider ID
   };
 }
 
@@ -133,42 +135,85 @@ export class ShopifyAdapter {
     start: Date,
     end: Date
   ): Promise<ReclaimProof> {
-    // TODO: Implement Reclaim SDK integration
-    // For now, return a mock proof structure
-
     const totalRevenue = this.calculateRevenue(orders);
+    const { appId, appSecret, providerId } = this.config.reclaimConfig;
 
-    return {
-      identifier: `shopify_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-      claimData: {
-        provider: 'shopify-orders',
-        parameters: JSON.stringify({
-          shop: this.config.shopDomain,
-          periodStart: start.toISOString(),
-          periodEnd: end.toISOString(),
-        }),
-        context: 'revenue-verification',
-      },
-      signatures: [
-        // Mock witness signatures
-        '0x' + '00'.repeat(96),
-      ],
-      witnesses: [
-        {
-          id: 'witness-1',
-          url: 'https://witness1.reclaim.xyz',
-        },
-      ],
-      extractedParameters: {
-        totalRevenue: totalRevenue.toString(),
-        currency: 'USD',
-        orderCount: orders.length,
+    // Use custom provider ID or default Shopify provider
+    const providerIdToUse = providerId || 'shopify-orders-api';
+
+    // Initialize Reclaim SDK
+    const proofRequest = await ReclaimProofRequest.init(
+      appId,
+      appSecret,
+      providerIdToUse
+    );
+
+    // Set context for this verification request
+    proofRequest.addContext(
+      JSON.stringify({
+        shop: this.config.shopDomain,
         periodStart: start.toISOString(),
         periodEnd: end.toISOString(),
-      },
-      publicData: '0x' + '00'.repeat(32), // Mock zkSNARK public inputs
-      proof: '0x' + '00'.repeat(256), // Mock zkSNARK proof
-    };
+        purpose: 'revenue-verification',
+      })
+    );
+
+    // Set parameters for the Shopify API request
+    proofRequest.setParams({
+      shopDomain: this.config.shopDomain,
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      accessToken: this.config.accessToken,
+    });
+
+    // Generate the proof
+    // Note: In a real implementation, this would trigger the Reclaim flow
+    // which may involve user interaction (QR code, browser extension, etc.)
+    return new Promise((resolve, reject) => {
+      proofRequest.startSession({
+        onSuccess: (proofs: any) => {
+          if (!proofs || proofs.length === 0) {
+            reject(new Error('No proofs received from Reclaim'));
+            return;
+          }
+
+          // Extract the first proof (there should only be one)
+          const reclaimProof = proofs[0];
+
+          // Transform Reclaim proof format to our ReclaimProof interface
+          const proof: ReclaimProof = {
+            identifier: reclaimProof.identifier || `shopify_${Date.now()}`,
+            claimData: {
+              provider: reclaimProof.claimData?.provider || 'shopify-orders',
+              parameters: reclaimProof.claimData?.parameters || JSON.stringify({
+                shop: this.config.shopDomain,
+                periodStart: start.toISOString(),
+                periodEnd: end.toISOString(),
+              }),
+              context: reclaimProof.claimData?.context || 'revenue-verification',
+            },
+            signatures: reclaimProof.signatures || [],
+            witnesses: reclaimProof.witnesses || [],
+            extractedParameters: {
+              totalRevenue: totalRevenue.toString(),
+              currency: 'USD',
+              orderCount: orders.length,
+              periodStart: start.toISOString(),
+              periodEnd: end.toISOString(),
+              // Include any additional parameters from Reclaim
+              ...reclaimProof.extractedParameters,
+            },
+            publicData: reclaimProof.publicData || '0x',
+            proof: reclaimProof.proof || '0x',
+          };
+
+          resolve(proof);
+        },
+        onFailure: (error: Error) => {
+          reject(new Error(`Reclaim verification failed: ${error.message}`));
+        },
+      });
+    });
   }
 
   /**

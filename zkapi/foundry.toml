@@ -2,5 +2,8 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+remappings = [
+    "@reclaimprotocol/verifier-solidity-sdk/=lib/verifier-solidity-sdk-integration/"
+]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

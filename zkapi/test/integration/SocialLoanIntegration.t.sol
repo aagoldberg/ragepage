@@ -26,7 +26,7 @@ contract SocialLoanIntegration is Test {
 
         // Deploy full stack
         registry = new OperatorRegistry();
-        verifier = new ZKProofVerifier();
+        verifier = new ZKProofVerifier(address(0)); // Use zero address for MVP testing
         oracle = new CashflowOracleAVS(address(registry), address(verifier));
         loanAdapter = new SocialLoanAdapter(address(oracle));
 

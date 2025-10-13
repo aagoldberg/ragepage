@@ -26,7 +26,10 @@ contract Deploy is Script {
 
         // 2. Deploy ZKProofVerifier
         console.log("Deploying ZKProofVerifier...");
-        ZKProofVerifier proofVerifier = new ZKProofVerifier();
+        // For MVP/testing, use zero address. In production, use actual Reclaim contract address
+        // from @reclaimprotocol/verifier-solidity-sdk/contracts/Addresses.sol
+        address reclaimAddress = address(0); // TODO: Set to actual Reclaim address for testnet/mainnet
+        ZKProofVerifier proofVerifier = new ZKProofVerifier(reclaimAddress);
         console.log("ZKProofVerifier deployed at:", address(proofVerifier));
 
         // 3. Deploy CashflowOracleAVS

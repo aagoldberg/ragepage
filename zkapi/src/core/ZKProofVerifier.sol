@@ -6,7 +6,10 @@ import "../interfaces/IZKProofVerifier.sol";
 /**
  * @title ZKProofVerifier
  * @notice Verifies zkTLS proofs from Reclaim Protocol
- * @dev This is a simplified implementation. In production, integrate actual Reclaim Protocol verifier
+ * @dev Integrates with Reclaim Protocol via interface for version compatibility
+ *
+ * The Reclaim Protocol SDK uses Solidity 0.8.4, while our contracts use ^0.8.20.
+ * We interact with Reclaim through low-level calls to maintain compatibility.
  */
 contract ZKProofVerifier is IZKProofVerifier {
     /*//////////////////////////////////////////////////////////////
@@ -26,6 +29,9 @@ contract ZKProofVerifier is IZKProofVerifier {
     /// @notice Owner
     address public owner;
 
+    /// @notice Reclaim Protocol contract address
+    address public reclaimAddress;
+
     /*//////////////////////////////////////////////////////////////
                               MODIFIERS
     //////////////////////////////////////////////////////////////*/
@@ -39,8 +45,14 @@ contract ZKProofVerifier is IZKProofVerifier {
                              CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor() {
+    /**
+     * @param _reclaimAddress Address of deployed Reclaim Protocol contract
+     * @dev Use addresses from @reclaimprotocol/verifier-solidity-sdk/contracts/Addresses.sol
+     * @dev Pass address(0) for MVP/testing mode (proofs won't be verified)
+     */
+    constructor(address _reclaimAddress) {
         owner = msg.sender;
+        reclaimAddress = _reclaimAddress;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -121,8 +133,9 @@ contract ZKProofVerifier is IZKProofVerifier {
 
     /**
      * @dev Verify Reclaim Protocol ZK proof
-     * @dev TODO: Implement actual cryptographic verification
-     *      For now, this is a placeholder that checks basic structure
+     * @dev Calls the Reclaim contract to cryptographically verify the proof
+     * @param proof Our ZKProof struct containing encoded Reclaim proof
+     * @return bool True if proof is valid
      */
     function _verifyReclaimProof(ZKProof calldata proof) internal view returns (bool) {
         // Basic sanity checks
@@ -130,14 +143,22 @@ contract ZKProofVerifier is IZKProofVerifier {
         if (proof.zkProofData.length == 0) return false;
         if (bytes(proof.apiEndpoint).length == 0) return false;
 
-        // TODO: Actual verification steps:
-        // 1. Verify ZK proof cryptographically (SNARK/STARK verification)
-        // 2. Check TLS session hash is valid
-        // 3. Verify claim hash matches extracted data
-        // 4. Verify signature chain from TLS certificate
+        // If no Reclaim address is set, return false
+        if (reclaimAddress == address(0)) {
+            return false;
+        }
 
-        // For MVP: simple placeholder
-        return true;
+        // Call Reclaim's verifyProof function via low-level call
+        // This maintains compatibility across Solidity versions
+        // Function signature: verifyProof(Proof memory proof)
+        bytes4 selector = bytes4(keccak256("verifyProof((((bytes32,address,uint32,uint32),bytes[]),(string,string,string)))"));
+
+        (bool success,) = reclaimAddress.staticcall(
+            abi.encodeWithSelector(selector, proof.zkProofData)
+        );
+
+        // Reclaim.verifyProof() reverts on failure, succeeds silently on success
+        return success;
     }
 
     /**
@@ -197,5 +218,14 @@ contract ZKProofVerifier is IZKProofVerifier {
         totalProofsVerified++;
 
         emit ProofVerified(proofHash, msg.sender, claim.totalRevenue, uint64(block.timestamp));
+    }
+
+    /**
+     * @notice Update Reclaim contract address
+     * @dev Allows updating if Reclaim deploys new version
+     */
+    function updateReclaimAddress(address _reclaimAddress) external onlyOwner {
+        require(_reclaimAddress != address(0), "Invalid Reclaim address");
+        reclaimAddress = _reclaimAddress;
     }
 }

@@ -7,3 +7,9 @@
 [submodule "zkapi/lib/forge-std"]
 	path = zkapi/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "zkapi/lib/verifier-solidity-sdk-integration"]
+	path = zkapi/lib/verifier-solidity-sdk-integration
+	url = https://github.com/reclaimprotocol/verifier-solidity-sdk-integration
+[submodule "zkapi/lib/openzeppelin-contracts"]
+	path = zkapi/lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
