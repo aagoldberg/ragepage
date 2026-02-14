@@ -502,7 +502,7 @@ function createCheckButton(postUrl, postText, isBeta) {
     btn.querySelector('.ragecheck-label').textContent = '...';
 
     try {
-      const payload = { url: postUrl };
+      const payload = { url: postUrl, source: 'extension' };
       if (postText) payload.text = postText;
       const response = await fetch(`${API_BASE}/api/analyze`, {
         method: 'POST',

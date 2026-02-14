@@ -84,7 +84,7 @@ async function runAnalysis() {
     const response = await fetch(`${apiBase}/api/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url, source: 'extension' })
     });
 
     loadingDiv.classList.remove('show');
