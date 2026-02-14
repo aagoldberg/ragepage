@@ -637,9 +637,6 @@ function processPost(post, config, isBeta) {
   if (!postUrl) return;
   if (post.querySelector('.ragecheck-btn')) return;
 
-  // Queue for auto-dot scoring
-  queuePostForDot(post, config);
-
   const postText = getPostText(post, config);
   const btn = createCheckButton(postUrl, postText, isBeta);
 
