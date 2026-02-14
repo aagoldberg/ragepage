@@ -1,4 +1,5 @@
 const autoCheckEl = document.getElementById('autoCheck');
+const autoDotsEl = document.getElementById('autoDots');
 const telemetryEl = document.getElementById('telemetry');
 const apiBaseEl = document.getElementById('apiBase');
 const statusEl = document.getElementById('status');
@@ -15,8 +16,10 @@ const platformEls = {
 };
 
 // Load saved settings
-chrome.storage.sync.get(['autoCheck', 'enabledPlatforms', 'apiBase', 'telemetry'], (result) => {
+chrome.storage.sync.get(['autoCheck', 'autoDots', 'enabledPlatforms', 'apiBase', 'telemetry'], (result) => {
   if (result.autoCheck) autoCheckEl.checked = result.autoCheck;
+  // autoDots defaults to true
+  autoDotsEl.checked = result.autoDots !== false;
   if (result.telemetry) telemetryEl.checked = result.telemetry;
 
   if (result.enabledPlatforms) {
@@ -37,6 +40,7 @@ function save() {
 
   const settings = {
     autoCheck: autoCheckEl.checked,
+    autoDots: autoDotsEl.checked,
     telemetry: telemetryEl.checked,
     enabledPlatforms,
     apiBase: apiBaseEl.value.trim() || undefined
@@ -51,6 +55,7 @@ function save() {
 }
 
 autoCheckEl.addEventListener('change', save);
+autoDotsEl.addEventListener('change', save);
 telemetryEl.addEventListener('change', save);
 apiBaseEl.addEventListener('change', save);
 for (const el of Object.values(platformEls)) {

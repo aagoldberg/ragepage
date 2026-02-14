@@ -7,15 +7,17 @@ const DEFAULT_API_BASE = 'https://ragecheck.com';
 
 let API_BASE = DEFAULT_API_BASE;
 let autoCheck = false;
+let autoDots = true; // Auto-dot indicators on every post
 let telemetryEnabled = false;
 let enabledPlatforms = {
   twitter: true, bluesky: true, facebook: true, reddit: true, threads: true,
   hackernews: true, youtube: true, stackoverflow: true
 };
 
-chrome.storage.sync.get(['apiBase', 'autoCheck', 'enabledPlatforms', 'telemetry'], (s) => {
+chrome.storage.sync.get(['apiBase', 'autoCheck', 'autoDots', 'enabledPlatforms', 'telemetry'], (s) => {
   if (s.apiBase) API_BASE = s.apiBase;
   if (s.autoCheck !== undefined) autoCheck = s.autoCheck;
+  if (s.autoDots !== undefined) autoDots = s.autoDots;
   if (s.enabledPlatforms) enabledPlatforms = { ...enabledPlatforms, ...s.enabledPlatforms };
   if (s.telemetry !== undefined) telemetryEnabled = s.telemetry;
 });
@@ -23,6 +25,7 @@ chrome.storage.sync.get(['apiBase', 'autoCheck', 'enabledPlatforms', 'telemetry'
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.apiBase) API_BASE = changes.apiBase.newValue || DEFAULT_API_BASE;
   if (changes.autoCheck) autoCheck = changes.autoCheck.newValue;
+  if (changes.autoDots !== undefined) autoDots = changes.autoDots.newValue;
   if (changes.enabledPlatforms) enabledPlatforms = { ...enabledPlatforms, ...changes.enabledPlatforms.newValue };
   if (changes.telemetry) telemetryEnabled = changes.telemetry.newValue;
 });
@@ -634,6 +637,9 @@ function processPost(post, config, isBeta) {
   if (!postUrl) return;
   if (post.querySelector('.ragecheck-btn')) return;
 
+  // Queue for auto-dot scoring
+  queuePostForDot(post, config);
+
   const postText = getPostText(post, config);
   const btn = createCheckButton(postUrl, postText, isBeta);
 
@@ -818,6 +824,122 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   return true; // keep channel open for async
 });
+
+// ============================================================
+// Auto-Dots: colored indicators on every post (rule-engine only)
+// ============================================================
+
+const dotQueue = new Map();      // postEl -> { id, text }
+const dotScored = new WeakSet();  // posts that already have dots
+let dotBatchTimer = null;
+let dotIdCounter = 0;
+
+function getDotColor(score) {
+  if (score >= 50) return 'red';
+  if (score >= 10) return 'yellow';
+  return 'green';
+}
+
+function createDot(score) {
+  const dot = document.createElement('div');
+  const color = getDotColor(score);
+  dot.className = `ragecheck-dot ragecheck-dot-${color}`;
+  dot.setAttribute('data-score', score);
+
+  // Tooltip on hover
+  const tooltip = document.createElement('span');
+  tooltip.className = 'ragecheck-dot-tip';
+  const label = score >= 50 ? 'Rage bait' : score >= 10 ? 'Borderline' : 'Clean';
+  tooltip.textContent = `${score} — ${label}`;
+  dot.appendChild(tooltip);
+
+  return dot;
+}
+
+function placeDot(post, score, config) {
+  if (post.querySelector('.ragecheck-dot')) return;
+
+  const dot = createDot(score);
+
+  // Platform-specific placement
+  if (config.actionBarSelector && config.name !== 'hackernews') {
+    const actionBar = config.name === 'twitter'
+      ? [...post.querySelectorAll('[role="group"]')].pop()
+      : post.querySelector(config.actionBarSelector);
+    if (actionBar) {
+      actionBar.style.position = actionBar.style.position || 'relative';
+      actionBar.prepend(dot);
+      return;
+    }
+  }
+
+  // Fallback: top-right corner
+  post.style.position = post.style.position || 'relative';
+  dot.classList.add('ragecheck-dot-floating');
+  post.appendChild(dot);
+}
+
+function queuePostForDot(post, config) {
+  if (!autoDots || dotScored.has(post) || dotQueue.has(post)) return;
+
+  const text = getPostText(post, config);
+  if (!text || text.length < 15) return; // skip trivially short posts
+
+  const id = `dot-${dotIdCounter++}`;
+  dotQueue.set(post, { id, text: text.slice(0, 2000) });
+
+  // Debounce: flush batch after 300ms of no new posts
+  clearTimeout(dotBatchTimer);
+  dotBatchTimer = setTimeout(flushDotBatch, 300);
+}
+
+async function flushDotBatch() {
+  if (dotQueue.size === 0) return;
+
+  // Grab current batch (up to 25)
+  const batch = [];
+  const postMap = new Map(); // id -> postEl
+  for (const [post, item] of dotQueue) {
+    batch.push(item);
+    postMap.set(item.id, post);
+    if (batch.length >= 25) break;
+  }
+
+  // Clear queued items we're about to send
+  for (const item of batch) {
+    for (const [post, qi] of dotQueue) {
+      if (qi.id === item.id) {
+        dotQueue.delete(post);
+        dotScored.add(post);
+        break;
+      }
+    }
+  }
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/analyze-batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: batch })
+    });
+
+    if (!resp.ok) return;
+    const data = await resp.json();
+
+    const config = currentPlatform || currentEngine || {};
+    for (const result of (data.results || [])) {
+      const post = postMap.get(result.id);
+      if (post) placeDot(post, result.score, config);
+    }
+  } catch (e) {
+    // Silently fail — dots are a nice-to-have
+  }
+
+  // If there are remaining items in the queue, flush again
+  if (dotQueue.size > 0) {
+    dotBatchTimer = setTimeout(flushDotBatch, 100);
+  }
+}
 
 // ============================================================
 // Main initialization
