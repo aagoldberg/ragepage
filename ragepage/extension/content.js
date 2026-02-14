@@ -856,24 +856,19 @@ function createDot(score) {
   return dot;
 }
 
-function placeDot(post, score, config) {
+function placeDot(post, score) {
   if (post.querySelector('.ragecheck-dot')) return;
 
   const dot = createDot(score);
 
-  // Platform-specific placement
-  if (config.actionBarSelector && config.name !== 'hackernews') {
-    const actionBar = config.name === 'twitter'
-      ? [...post.querySelectorAll('[role="group"]')].pop()
-      : post.querySelector(config.actionBarSelector);
-    if (actionBar) {
-      actionBar.style.position = actionBar.style.position || 'relative';
-      actionBar.prepend(dot);
-      return;
-    }
+  // Place next to the existing Check button if present
+  const wrapper = post.querySelector('.ragecheck-wrapper');
+  if (wrapper) {
+    wrapper.insertBefore(dot, wrapper.firstChild);
+    return;
   }
 
-  // Fallback: top-right corner
+  // Fallback: float in top-right corner
   post.style.position = post.style.position || 'relative';
   dot.classList.add('ragecheck-dot-floating');
   post.appendChild(dot);
@@ -917,22 +912,28 @@ async function flushDotBatch() {
   }
 
   try {
+    console.log(`RageCheck dots: scoring ${batch.length} posts...`);
     const resp = await fetch(`${API_BASE}/api/analyze-batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items: batch })
     });
 
-    if (!resp.ok) return;
+    if (!resp.ok) {
+      console.warn(`RageCheck dots: batch API returned ${resp.status}`);
+      return;
+    }
     const data = await resp.json();
 
-    const config = currentPlatform || currentEngine || {};
     for (const result of (data.results || [])) {
       const post = postMap.get(result.id);
-      if (post) placeDot(post, result.score, config);
+      if (post) {
+        placeDot(post, result.score);
+        console.log(`RageCheck dot: ${result.id} → ${result.score} (${getDotColor(result.score)})`);
+      }
     }
   } catch (e) {
-    // Silently fail — dots are a nice-to-have
+    console.warn('RageCheck dots: batch failed', e.message);
   }
 
   // If there are remaining items in the queue, flush again
