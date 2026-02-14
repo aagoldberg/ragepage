@@ -234,6 +234,45 @@
         <span class="toggle-slider"></span>
       </label>
     </div>
+
+    <div class="option-row">
+      <div class="option-label">Hacker News</div>
+      <label class="toggle">
+        <input type="checkbox" id="plt-hackernews" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="option-row">
+      <div class="option-label">YouTube</div>
+      <label class="toggle">
+        <input type="checkbox" id="plt-youtube" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="option-row">
+      <div class="option-label">Stack Overflow</div>
+      <label class="toggle">
+        <input type="checkbox" id="plt-stackoverflow" checked>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Improve RageCheck</div>
+
+    <div class="option-row">
+      <div>
+        <div class="option-label">Help improve site detection</div>
+        <div class="option-desc">Report which sites work and which don't (no page content is sent &mdash; only domain name and detection outcome)</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="telemetry">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
   </div>
 
   <div class="section">
@@ -249,7 +288,7 @@
   <div class="status" id="status">Settings saved</div>
 
   <div class="privacy">
-    <strong>Privacy:</strong> When you check a post, the URL or text is sent to the RageCheck API for analysis. No data is stored permanently. No browsing history is collected.
+    <strong>Privacy:</strong> When you check a post, the URL or text is sent to the RageCheck API for analysis. No data is stored permanently. No browsing history is collected. If telemetry is enabled, only the domain name and detection outcome are reported &mdash; never page content, URLs, or personal information.
   </div>
 
   <script src="options.js"></script>

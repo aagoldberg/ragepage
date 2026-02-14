@@ -1,4 +1,5 @@
 const autoCheckEl = document.getElementById('autoCheck');
+const telemetryEl = document.getElementById('telemetry');
 const apiBaseEl = document.getElementById('apiBase');
 const statusEl = document.getElementById('status');
 
@@ -7,16 +8,20 @@ const platformEls = {
   bluesky: document.getElementById('plt-bluesky'),
   facebook: document.getElementById('plt-facebook'),
   reddit: document.getElementById('plt-reddit'),
-  threads: document.getElementById('plt-threads')
+  threads: document.getElementById('plt-threads'),
+  hackernews: document.getElementById('plt-hackernews'),
+  youtube: document.getElementById('plt-youtube'),
+  stackoverflow: document.getElementById('plt-stackoverflow')
 };
 
 // Load saved settings
-chrome.storage.sync.get(['autoCheck', 'enabledPlatforms', 'apiBase'], (result) => {
+chrome.storage.sync.get(['autoCheck', 'enabledPlatforms', 'apiBase', 'telemetry'], (result) => {
   if (result.autoCheck) autoCheckEl.checked = result.autoCheck;
+  if (result.telemetry) telemetryEl.checked = result.telemetry;
 
   if (result.enabledPlatforms) {
     for (const [key, el] of Object.entries(platformEls)) {
-      el.checked = result.enabledPlatforms[key] !== false;
+      if (el) el.checked = result.enabledPlatforms[key] !== false;
     }
   }
 
@@ -27,16 +32,16 @@ chrome.storage.sync.get(['autoCheck', 'enabledPlatforms', 'apiBase'], (result) =
 function save() {
   const enabledPlatforms = {};
   for (const [key, el] of Object.entries(platformEls)) {
-    enabledPlatforms[key] = el.checked;
+    if (el) enabledPlatforms[key] = el.checked;
   }
 
   const settings = {
     autoCheck: autoCheckEl.checked,
+    telemetry: telemetryEl.checked,
     enabledPlatforms,
     apiBase: apiBaseEl.value.trim() || undefined
   };
 
-  // Remove undefined keys so defaults apply
   if (!settings.apiBase) delete settings.apiBase;
 
   chrome.storage.sync.set(settings, () => {
@@ -46,7 +51,8 @@ function save() {
 }
 
 autoCheckEl.addEventListener('change', save);
+telemetryEl.addEventListener('change', save);
 apiBaseEl.addEventListener('change', save);
 for (const el of Object.values(platformEls)) {
-  el.addEventListener('change', save);
+  if (el) el.addEventListener('change', save);
 }

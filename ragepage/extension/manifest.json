@@ -2,12 +2,18 @@
   "manifest_version": 3,
   "name": "RageCheck",
   "description": "Instantly detect rage bait and emotional manipulation in social media posts. Get a score before you engage.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "permissions": [
     "activeTab",
     "storage",
+    "scripting",
     "contextMenus",
-    "notifications"
+    "notifications",
+    "alarms"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ],
   "host_permissions": [
     "https://ragecheck.com/*",
@@ -24,7 +30,11 @@
         "*://bsky.app/*",
         "*://www.facebook.com/*",
         "*://www.threads.net/*",
-        "*://www.reddit.com/*"
+        "*://www.reddit.com/*",
+        "*://news.ycombinator.com/*",
+        "*://www.youtube.com/*",
+        "*://stackoverflow.com/*",
+        "*://*.stackexchange.com/*"
       ],
       "js": ["content.js"],
       "css": ["content.css"]

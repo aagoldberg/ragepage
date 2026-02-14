@@ -76,8 +76,48 @@
     .tagline {
       font-size: 12px;
       color: #a1a1aa;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
+
+    /* Tier indicator */
+    .tier-status {
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .tier-status.show { display: flex; align-items: center; gap: 8px; }
+
+    .tier-status.tier-1 {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .tier-status.tier-2 {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fcd34d;
+    }
+
+    .tier-status.tier-unknown {
+      background: rgba(107, 114, 128, 0.1);
+      border: 1px solid rgba(107, 114, 128, 0.3);
+      color: #9ca3af;
+    }
+
+    .tier-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .tier-1 .tier-dot { background: #10b981; }
+    .tier-2 .tier-dot { background: #f59e0b; }
+    .tier-unknown .tier-dot { background: #6b7280; }
 
     .input-group {
       margin-bottom: 10px;
@@ -93,17 +133,17 @@
       font-size: 13px;
     }
 
-    input::placeholder {
-      color: #71717a;
-    }
+    input::placeholder { color: #71717a; }
+    input:focus { outline: none; border-color: #6366f1; }
 
-    input:focus {
-      outline: none;
-      border-color: #6366f1;
+    .btn-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 4px;
     }
 
     .btn-analyze {
-      width: 100%;
+      flex: 1;
       padding: 10px;
       border: none;
       border-radius: 8px;
@@ -115,25 +155,28 @@
       transition: opacity 0.2s;
     }
 
-    .btn-analyze:hover {
-      opacity: 0.9;
+    .btn-analyze:hover { opacity: 0.9; }
+    .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-scan {
+      padding: 10px 14px;
+      border: 1px solid #3f3f46;
+      border-radius: 8px;
+      background: transparent;
+      color: #a1a1aa;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
     }
 
-    .btn-analyze:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .btn-scan:hover { border-color: #6366f1; color: #fafafa; }
+    .btn-scan:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Loading spinner */
-    .loading {
-      display: none;
-      text-align: center;
-      padding: 20px 0;
-    }
-
-    .loading.show {
-      display: block;
-    }
+    .loading { display: none; text-align: center; padding: 20px 0; }
+    .loading.show { display: block; }
 
     .spinner {
       width: 28px;
@@ -145,13 +188,31 @@
       margin: 0 auto 8px;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text { font-size: 12px; color: #71717a; }
+
+    /* Scan result */
+    .scan-result {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      display: none;
     }
 
-    .loading-text {
-      font-size: 12px;
-      color: #71717a;
+    .scan-result.show { display: block; }
+
+    .scan-result.scan-success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .scan-result.scan-fail {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
     }
 
     /* Result */
@@ -162,9 +223,7 @@
       display: none;
     }
 
-    .result.show {
-      display: block;
-    }
+    .result.show { display: block; }
 
     .result.high {
       background: rgba(239, 68, 68, 0.15);
@@ -186,11 +245,7 @@
       border: 1px solid rgba(107, 114, 128, 0.4);
     }
 
-    .score {
-      font-size: 36px;
-      font-weight: 700;
-      text-align: center;
-    }
+    .score { font-size: 36px; font-weight: 700; text-align: center; }
 
     .score-label {
       font-size: 13px;
@@ -200,14 +255,8 @@
     }
 
     /* Signal breakdown */
-    .signals {
-      margin-top: 12px;
-      display: none;
-    }
-
-    .signals.show {
-      display: block;
-    }
+    .signals { margin-top: 12px; display: none; }
+    .signals.show { display: block; }
 
     .signals-title {
       font-size: 11px;
@@ -256,15 +305,8 @@
     }
 
     /* Links */
-    .result-links {
-      margin-top: 10px;
-      text-align: center;
-      display: none;
-    }
-
-    .result-links.show {
-      display: block;
-    }
+    .result-links { margin-top: 10px; text-align: center; display: none; }
+    .result-links.show { display: block; }
 
     .result-links a {
       color: #818cf8;
@@ -273,9 +315,7 @@
       font-weight: 500;
     }
 
-    .result-links a:hover {
-      text-decoration: underline;
-    }
+    .result-links a:hover { text-decoration: underline; }
 
     /* Retry */
     .retry-btn {
@@ -291,14 +331,8 @@
       cursor: pointer;
     }
 
-    .retry-btn:hover {
-      border-color: #6366f1;
-      color: #fafafa;
-    }
-
-    .retry-btn.show {
-      display: block;
-    }
+    .retry-btn:hover { border-color: #6366f1; color: #fafafa; }
+    .retry-btn.show { display: block; }
 
     .supported {
       margin-top: 14px;
@@ -321,36 +355,42 @@
       font-size: 11px;
     }
 
-    .footer a:hover {
-      text-decoration: underline;
-    }
+    .footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>RageCheck</h1>
     <button class="info-btn" aria-label="What is this?">?
-      <div class="info-tip">RageCheck analyzes social media posts for rage bait &mdash; content designed to provoke anger for engagement. Paste a URL or browse supported platforms to check posts.</div>
+      <div class="info-tip">RageCheck analyzes posts for rage bait &mdash; content designed to provoke anger for engagement. Works on social platforms automatically. Use "Scan page" on forums and other sites.</div>
     </button>
   </div>
   <p class="tagline">Check if content is designed to make you angry</p>
 
+  <div class="tier-status" id="tierStatus">
+    <span class="tier-dot"></span>
+    <span id="tierText"></span>
+  </div>
+
   <div class="input-group">
     <input type="url" id="url" placeholder="Paste a URL to analyze...">
   </div>
-  <button class="btn-analyze" id="analyze">Analyze</button>
+  <div class="btn-row">
+    <button class="btn-analyze" id="analyze">Analyze</button>
+    <button class="btn-scan" id="scanBtn">Scan page</button>
+  </div>
 
   <div class="loading" id="loading">
     <div class="spinner"></div>
     <div class="loading-text">Analyzing for rage bait...</div>
   </div>
 
+  <div class="scan-result" id="scanResult"></div>
+
   <div class="result" id="result">
     <div class="score" id="score">--</div>
     <div class="score-label" id="label">Rage Score</div>
-
     <div class="signals" id="signals"></div>
-
     <div class="result-links" id="resultLinks">
       <a id="fullAnalysis" href="#" target="_blank">View full analysis &rarr;</a>
     </div>
@@ -358,7 +398,7 @@
 
   <button class="retry-btn" id="retry">Retry analysis</button>
 
-  <p class="supported">Works on Twitter, Bluesky, Facebook, Reddit, Threads</p>
+  <p class="supported">Auto: Twitter, Bluesky, Reddit, Facebook, Threads, HN, YouTube, SO &middot; Scan: any forum</p>
 
   <div class="footer">
     <a href="https://ragecheck.com" target="_blank">ragecheck.com</a>
