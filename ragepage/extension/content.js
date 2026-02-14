@@ -49,6 +49,10 @@ const PLATFORMS = {
     getPostUrl: (post) => {
       const timeLink = post.querySelector('a[href*="/status/"]');
       return timeLink ? timeLink.href : null;
+    },
+    getPostText: (post) => {
+      const tweetText = post.querySelector('[data-testid="tweetText"]');
+      return tweetText ? tweetText.innerText.trim() : '';
     }
   },
   bluesky: {
@@ -64,6 +68,16 @@ const PLATFORMS = {
         }
       }
       return null;
+    },
+    getPostText: (post) => {
+      // Bluesky post text is typically in a div with dir="auto" or the main text block
+      const textEls = post.querySelectorAll('[dir="auto"]');
+      const texts = [];
+      textEls.forEach(el => {
+        const t = el.innerText.trim();
+        if (t.length > 20) texts.push(t);
+      });
+      return texts.join('\n').trim();
     },
     findPosts: () => {
       const posts = [];
@@ -94,6 +108,17 @@ const PLATFORMS = {
     getPostUrl: (post) => {
       const link = post.querySelector('a[href*="/posts/"], a[href*="permalink"]');
       return link ? link.href : null;
+    },
+    getPostText: (post) => {
+      const textEl = post.querySelector('[data-ad-preview="message"], [data-ad-comet-preview="message"]');
+      if (textEl) return textEl.innerText.trim();
+      // Fallback: grab the largest text block in the post
+      let best = '';
+      post.querySelectorAll('div[dir="auto"]').forEach(el => {
+        const t = el.innerText.trim();
+        if (t.length > best.length) best = t;
+      });
+      return best;
     }
   },
   reddit: {
@@ -103,6 +128,12 @@ const PLATFORMS = {
     getPostUrl: (post) => {
       const link = post.querySelector('a[href*="/comments/"]');
       return link ? link.href : window.location.href;
+    },
+    getPostText: (post) => {
+      // shreddit-post: title is in an <a> or <h1>, body in a text-neutral-content div
+      const title = post.getAttribute('post-title') || post.querySelector('h1, [slot="title"]')?.innerText || '';
+      const body = post.querySelector('[slot="text-body"], [data-testid="post-content"], .md')?.innerText || '';
+      return (title + '\n' + body).trim();
     }
   },
   threads: {
@@ -112,6 +143,10 @@ const PLATFORMS = {
     getPostUrl: (post) => {
       const link = post.querySelector('a[href*="/post/"]');
       return link ? 'https://www.threads.net' + link.getAttribute('href') : null;
+    },
+    getPostText: (post) => {
+      const textEl = post.querySelector('[dir="auto"]');
+      return textEl ? textEl.innerText.trim() : '';
     }
   },
   hackernews: {
@@ -122,8 +157,11 @@ const PLATFORMS = {
       const id = post.getAttribute('id');
       return id ? `https://news.ycombinator.com/item?id=${id}` : null;
     },
+    getPostText: (post) => {
+      const commText = post.querySelector('.commtext');
+      return commText ? commText.innerText.trim() : '';
+    },
     findPosts: () => {
-      // HN comments are table rows with class "athing comtr"
       return document.querySelectorAll('.athing.comtr');
     }
   },
@@ -132,6 +170,10 @@ const PLATFORMS = {
     postSelector: 'ytd-comment-thread-renderer',
     actionBarSelector: '#action-buttons',
     getPostUrl: () => window.location.href,
+    getPostText: (post) => {
+      const content = post.querySelector('#content-text');
+      return content ? content.innerText.trim() : '';
+    },
     findPosts: () => document.querySelectorAll('ytd-comment-thread-renderer')
   },
   stackoverflow: {
@@ -141,6 +183,10 @@ const PLATFORMS = {
     getPostUrl: (post) => {
       const link = post.querySelector('.js-share-link, a[href*="/a/"], a[href*="/q/"]');
       return link ? link.href : window.location.href;
+    },
+    getPostText: (post) => {
+      const body = post.querySelector('.js-post-body, .postcell .post-text');
+      return body ? body.innerText.trim() : '';
     }
   }
 };
@@ -411,7 +457,7 @@ const SIGNAL_LABELS = {
   tribal: 'Tribal Signaling'
 };
 
-function createCheckButton(postUrl, isBeta) {
+function createCheckButton(postUrl, postText, isBeta) {
   const btn = document.createElement('button');
   btn.className = 'ragecheck-btn ragecheck-enter' + (isBeta ? ' ragecheck-beta' : '');
   btn.innerHTML = `
@@ -456,10 +502,12 @@ function createCheckButton(postUrl, isBeta) {
     btn.querySelector('.ragecheck-label').textContent = '...';
 
     try {
+      const payload = { url: postUrl };
+      if (postText) payload.text = postText;
       const response = await fetch(`${API_BASE}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: postUrl })
+        body: JSON.stringify(payload)
       });
 
       if (response.status === 429) {
@@ -562,6 +610,22 @@ function showResult(btn, result, postUrl) {
 // Post processing and injection
 // ============================================================
 
+function getPostText(post, config) {
+  // Try platform/engine-specific extractor first
+  if (config.getPostText) {
+    const text = config.getPostText(post);
+    if (text) return text;
+  }
+  // Forum engines have contentSelector
+  if (config.contentSelector) {
+    const el = post.querySelector(config.contentSelector);
+    if (el) return el.innerText.trim();
+  }
+  // Fallback: grab innerText of the post, truncated
+  const raw = post.innerText?.trim() || '';
+  return raw.slice(0, 2000);
+}
+
 function processPost(post, config, isBeta) {
   if (processedPosts.has(post)) return;
   processedPosts.add(post);
@@ -570,7 +634,8 @@ function processPost(post, config, isBeta) {
   if (!postUrl) return;
   if (post.querySelector('.ragecheck-btn')) return;
 
-  const btn = createCheckButton(postUrl, isBeta);
+  const postText = getPostText(post, config);
+  const btn = createCheckButton(postUrl, postText, isBeta);
 
   const wrapper = document.createElement('div');
   wrapper.className = 'ragecheck-wrapper';
