@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 340px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #18181b;
+      color: #fafafa;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f43f5e, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .info-btn {
+      background: none;
+      border: 1px solid #3f3f46;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      color: #71717a;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .info-btn:hover {
+      border-color: #6366f1;
+      color: #a5b4fc;
+    }
+
+    .info-tip {
+      display: none;
+      position: absolute;
+      top: 28px;
+      right: 0;
+      width: 220px;
+      padding: 10px;
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #a1a1aa;
+      line-height: 1.5;
+      z-index: 10;
+      white-space: normal;
+    }
+
+    .info-btn:hover .info-tip {
+      display: block;
+    }
+
+    .tagline {
+      font-size: 12px;
+      color: #a1a1aa;
+      margin-bottom: 16px;
+    }
+
+    .input-group {
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #3f3f46;
+      border-radius: 8px;
+      background: #27272a;
+      color: #fafafa;
+      font-size: 13px;
+    }
+
+    input::placeholder {
+      color: #71717a;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    .btn-analyze {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-analyze:hover {
+      opacity: 0.9;
+    }
+
+    .btn-analyze:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Loading spinner */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #3f3f46;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 12px;
+      color: #71717a;
+    }
+
+    /* Result */
+    .result {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result.high {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .result.medium {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .result.low {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .result.error {
+      background: rgba(107, 114, 128, 0.15);
+      border: 1px solid rgba(107, 114, 128, 0.4);
+    }
+
+    .score {
+      font-size: 36px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .score-label {
+      font-size: 13px;
+      text-align: center;
+      color: #a1a1aa;
+      margin-top: 2px;
+    }
+
+    /* Signal breakdown */
+    .signals {
+      margin-top: 12px;
+      display: none;
+    }
+
+    .signals.show {
+      display: block;
+    }
+
+    .signals-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #71717a;
+      margin-bottom: 8px;
+    }
+
+    .signal-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .signal-name {
+      font-size: 11px;
+      color: #a1a1aa;
+      min-width: 100px;
+      text-align: right;
+    }
+
+    .signal-track {
+      flex: 1;
+      height: 6px;
+      background: #27272a;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .signal-value {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .signal-value.sv-high { background: #ef4444; }
+    .signal-value.sv-medium { background: #f59e0b; }
+    .signal-value.sv-low { background: #22c55e; }
+
+    .signal-num {
+      font-size: 11px;
+      color: #71717a;
+      min-width: 24px;
+    }
+
+    /* Links */
+    .result-links {
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
+
+    .result-links.show {
+      display: block;
+    }
+
+    .result-links a {
+      color: #818cf8;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .result-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* Retry */
+    .retry-btn {
+      display: none;
+      margin-top: 8px;
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #3f3f46;
+      border-radius: 6px;
+      background: transparent;
+      color: #a1a1aa;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .retry-btn:hover {
+      border-color: #6366f1;
+      color: #fafafa;
+    }
+
+    .retry-btn.show {
+      display: block;
+    }
+
+    .supported {
+      margin-top: 14px;
+      font-size: 11px;
+      color: #52525b;
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 12px;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .footer a {
+      color: #6366f1;
+      text-decoration: none;
+      font-size: 11px;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>RageCheck</h1>
+    <button class="info-btn" aria-label="What is this?">?
+      <div class="info-tip">RageCheck analyzes social media posts for rage bait &mdash; content designed to provoke anger for engagement. Paste a URL or browse supported platforms to check posts.</div>
+    </button>
+  </div>
+  <p class="tagline">Check if content is designed to make you angry</p>
+
+  <div class="input-group">
+    <input type="url" id="url" placeholder="Paste a URL to analyze...">
+  </div>
+  <button class="btn-analyze" id="analyze">Analyze</button>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Analyzing for rage bait...</div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="score" id="score">--</div>
+    <div class="score-label" id="label">Rage Score</div>
+
+    <div class="signals" id="signals"></div>
+
+    <div class="result-links" id="resultLinks">
+      <a id="fullAnalysis" href="#" target="_blank">View full analysis &rarr;</a>
+    </div>
+  </div>
+
+  <button class="retry-btn" id="retry">Retry analysis</button>
+
+  <p class="supported">Works on Twitter, Bluesky, Facebook, Reddit, Threads</p>
+
+  <div class="footer">
+    <a href="https://ragecheck.com" target="_blank">ragecheck.com</a>
+    <a id="openOptions" href="#">Settings</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

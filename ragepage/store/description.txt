@@ -1,0 +1,34 @@
+RageCheck - Detect Rage Bait Before You Engage
+
+Stop falling for rage bait. RageCheck instantly analyzes social media posts and tells you if content is designed to make you angry for engagement.
+
+HOW IT WORKS
+
+RageCheck adds a "Check" button to posts on your favorite social media platforms. Click it to get an instant rage score (0-100) that shows how likely a post is engineered to provoke anger.
+
+The score breaks down five key manipulation signals:
+- Emotional Arousal: Language designed to trigger strong feelings
+- Enemy Construction: Creating an "us vs. them" narrative
+- Moral Outrage: Exploiting your sense of right and wrong
+- False Urgency: Pressuring you to react immediately
+- Tribal Signaling: Appealing to group identity
+
+SUPPORTED PLATFORMS
+- Twitter / X
+- Bluesky
+- Facebook
+- Reddit
+- Threads
+
+FEATURES
+- Inline "Check" buttons on every post
+- Popup analyzer for any URL
+- Right-click context menu to check any text, link, or page
+- Color-coded scores: green (low), yellow (medium), red (high)
+- Signal breakdown showing exactly what manipulation tactics are used
+- Configurable settings per platform
+
+PRIVACY
+When you check a post, only the URL or text you choose to analyze is sent to ragecheck.com for scoring. No browsing history is collected. No data is stored permanently. No tracking, no ads.
+
+Built by ragecheck.com
