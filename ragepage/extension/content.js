@@ -859,6 +859,10 @@ function createDot(score) {
 function placeDot(post, score) {
   if (post.querySelector('.ragecheck-dot')) return;
 
+  // Only show dots for borderline (yellow) and rage bait (red)
+  // No dot = clean — dots are warnings, not noise
+  if (score < 10) return;
+
   const dot = createDot(score);
 
   // Place next to the existing Check button if present
